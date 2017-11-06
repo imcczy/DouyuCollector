@@ -120,7 +120,7 @@ public class Crawler implements Runnable {
             }
         }
         close();
-        logger.info("Crawler finished, cost: {} ms", System.currentTimeMillis() - start);
+        logger.info("Crawler finished, cost: {} seconds.", (System.currentTimeMillis() - start) / 1000);
     }
 
     protected void extractAndAddRequests(Response response) {

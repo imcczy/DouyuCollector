@@ -7,7 +7,8 @@ import in.odachi.douyucollector.protocol.Chat;
 import in.odachi.douyucollector.protocol.Deserve;
 import in.odachi.douyucollector.protocol.Dgb;
 import in.odachi.douyucollector.protocol.Message;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.redisson.api.RList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class Consumer extends Thread {
                 e.printStackTrace();
             }
         }
-        logger.error("{} has exited.", Thread.currentThread().getName());
+        logger.info("{} has exited.", Thread.currentThread().getName());
     }
 
     /**
@@ -118,7 +119,7 @@ public class Consumer extends Thread {
                     reportRate += processedTotalRate;
                     if (modIndex++ % Constants.PROCESSED_RATE_REPORT_GAP == 0) {
                         long timeMillis = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                        rateList.add(new Pair<>(timeMillis, new Double(reportRate / Constants.PROCESSED_RATE_REPORT_GAP).intValue()));
+                        rateList.add(new ImmutablePair<>(timeMillis, new Double(reportRate / Constants.PROCESSED_RATE_REPORT_GAP).intValue()));
                         // 保留最近的PROCESSED_RATE_KEEP_SIZE个数据
                         while (rateList.size() > Constants.PROCESSED_RATE_KEEP_SIZE) {
                             rateList.remove(0);

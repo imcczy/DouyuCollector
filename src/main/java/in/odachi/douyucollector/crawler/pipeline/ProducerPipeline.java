@@ -20,7 +20,9 @@ public class ProducerPipeline implements Pipeline {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final BlockingQueue<ChannelTask> channelTasks;
-    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Constants.DATE_PATTERN);
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Constants.DATE_PATTERN);
+
+    private long listenedCount;
 
     public ProducerPipeline(BlockingQueue<ChannelTask> channelTasks) {
         this.channelTasks = channelTasks;
@@ -34,6 +36,7 @@ public class ProducerPipeline implements Pipeline {
                 Integer roomId = r.getRoomId();
                 // 推送任务到生产者
                 if (r.getFansNum() > ConfigUtil.getFansMinimum()) {
+                    listenedCount++;
                     if (!channelTasks.offer(new ChannelTask(roomId))) {
                         logger.error("Offer room id into channel task queue FAILED: {}", roomId);
                     }
@@ -52,10 +55,15 @@ public class ProducerPipeline implements Pipeline {
                     Double value = oldValue == null ? 0.2 : oldValue + 0.2;
                     onlineTotal.set(value, Constants.REDIS_DATA_KEEP_DAYS, TimeUnit.DAYS);
                 } else {
-                    logger.debug("Listened room is NOT online: " + roomId);
+                    logger.debug("Listened room is not online: " + roomId);
                 }
             }
         });
         return true;
+    }
+
+    @Override
+    public void close() {
+        logger.info("Listened room totally: {}", listenedCount);
     }
 }

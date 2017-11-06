@@ -53,12 +53,12 @@ public class Bootstrap {
         }
 
         private void scheduleCrawler() {
-            executor.scheduleAtFixedRate(categoryCrawler(), 0, 1, TimeUnit.DAYS);
-            executor.scheduleAtFixedRate(roomCrawler(), 0, 12, TimeUnit.MINUTES);
+            executor.scheduleAtFixedRate(this::categoryCrawler, 0, 1, TimeUnit.DAYS);
+            executor.scheduleAtFixedRate(this::roomCrawler, 0, 12, TimeUnit.MINUTES);
             shutdownGracefully();
         }
 
-        private Crawler roomCrawler() {
+        private void roomCrawler() {
             Map<String, Object> param = new HashMap<>(2);
             param.put("page", 1);
             Request request = new Request(new RoomListProcessor())
@@ -67,21 +67,23 @@ public class Bootstrap {
                     .addHeader(Constants.Header.USER_AGENT, Constants.Header.USER_AGENT_PAD)
                     .addHeader(Constants.Header.X_REQUESTED_WITH, "XMLHttpRequest")
                     .body(param);
-            return new Crawler().startRequest(request)
+            new Crawler().startRequest(request)
                     .pipeline(new DatabasePipeline())
                     .pipeline(new ProducerPipeline(channelTasks))
-                    .threadNum(16);
+                    .threadNum(8)
+                    .run();
         }
 
-        private Crawler categoryCrawler() {
+        private void categoryCrawler() {
             Request request = new Request(new CategoryProcessor())
                     .url(Constants.HTTPS_M_DOUYU_COM_CATEGORY)
                     .method(Constants.Method.GET)
                     .addHeader(Constants.Header.USER_AGENT, Constants.Header.USER_AGENT_PAD)
                     .addHeader(Constants.Header.X_REQUESTED_WITH, "XMLHttpRequest");
-            return new Crawler().startRequest(request)
+            new Crawler().startRequest(request)
                     .pipeline(new DatabasePipeline())
-                    .threadNum(1);
+                    .threadNum(1)
+                    .run();
         }
 
         private void shutdownGracefully() {
@@ -90,7 +92,7 @@ public class Bootstrap {
                     new Thread(() -> {
                         logger.info("Exit signal is received, program will exit.");
                         executor.shutdown();
-                    }, "MasterShutdownHook")
+                    }, "CrawlerShutdownHook")
             );
         }
     }
@@ -116,7 +118,7 @@ public class Bootstrap {
                         // 中断监视线程
                         consumer.interrupt();
                         try {
-                            for (int i = 0; i < 30; i++) {
+                            for (int i = 0; i < 20; i++) {
                                 Thread.sleep(1000);
                                 if (consumer.getState() == Thread.State.TERMINATED) {
                                     logger.info("ShutdownHook exit.");
@@ -126,7 +128,7 @@ public class Bootstrap {
                         } catch (InterruptedException ignored) {
                         }
                         logger.info("Exit timeout, program will exit forcibly.");
-                    }, "MasterShutdownHook")
+                    }, "ConsumerShutdownHook")
             );
         }
     }
@@ -166,7 +168,7 @@ public class Bootstrap {
                         // 中断IO线程
                         selector.stop();
                         try {
-                            for (int i = 0; i < 30; i++) {
+                            for (int i = 0; i < 20; i++) {
                                 Thread.sleep(1000);
                                 if (selector.isStopped()) {
                                     return;
@@ -175,7 +177,7 @@ public class Bootstrap {
                         } catch (InterruptedException ignored) {
                         }
                         logger.info("Exit timeout, program will exit forcibly.");
-                    }, "SlaveShutdownHook")
+                    }, "ProducerShutdownHook")
             );
         }
     }

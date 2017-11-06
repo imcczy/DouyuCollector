@@ -38,7 +38,7 @@ public class HttpClientDownloader implements Downloader {
         try {
             httpResponse = httpClient.execute(generateHttpUriRequest(request), generateHttpClientContext(request));
             response = handleResponse(request, httpResponse);
-            logger.info("Downloading page success {}", request);
+            logger.debug("Downloading page success {}", request);
         } catch (IOException e) {
             logger.warn("Download page {} error", request, e);
             response.setDownloadSuccess(false);

@@ -16,8 +16,8 @@ DouyuCollector是一个采集斗鱼直播平台弹幕信息的小工具，基于
 输出目录结构：
 
     \---target
-        |   DouyuCollector-2.0.jar
-        |   run.sh
+        |       DouyuCollector-2.0.jar
+        |       run.sh
         |
         +---conf
         |       douyu.properties

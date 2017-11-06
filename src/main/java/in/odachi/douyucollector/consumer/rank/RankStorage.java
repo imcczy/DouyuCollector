@@ -124,7 +124,7 @@ public enum RankStorage {
                 Gift gift = LCache.instance.getGift(gid);
                 if (gift == null) {
                     if (LCache.instance.setGiftNotFound(gid)) {
-                        logger.error("Gift {} NOT found, roomId: {}", gid, roomId);
+                        logger.error("Gift {} not found in room {}", gid, roomId);
                     }
                 } else {
                     Double price = gift.getPc() * (("2".equals(gift.getType())) ? 1 : 0.001);

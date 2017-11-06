@@ -41,6 +41,7 @@ public class RankProcessor implements MessageProcessor {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
             logger.info("RankProcessor starts.");
+            long start = System.currentTimeMillis();
             // 实时统计弹幕数量
             RankStorage.instance.computeMsgCount(mcm);
             // 实时统计弹幕人次
@@ -51,7 +52,7 @@ public class RankProcessor implements MessageProcessor {
             RankStorage.instance.computeGiftUser(gum);
             // 实时统计礼物价值
             RankStorage.instance.computeGiftPrice(gtm);
-            logger.info("RankProcessor ends.");
+            logger.info("RankProcessor ends, cost {} milliseconds.", System.currentTimeMillis() - start);
         }, delay, 60 * 1000, TimeUnit.MILLISECONDS);
     }
 

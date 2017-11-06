@@ -53,9 +53,10 @@ public class ThreadedSelector {
         }
         SelectorThreadLoadBalancer balancer = new SelectorThreadLoadBalancer(selectorThreads);
         for (String host : args.hosts) {
-            BossThread bossThread = new BossThread(host, balancer);
+            bossThreads.add(new BossThread(host, balancer));
+        }
+        for (BossThread bossThread : bossThreads) {
             bossThread.start();
-            bossThreads.add(bossThread);
         }
     }
 
@@ -68,8 +69,9 @@ public class ThreadedSelector {
                 try {
                     // 通知轮训器注册写操作
                     selectorThreads.forEach((thread) -> {
-                        thread.interestOpsInAll();
-                        logger.debug(thread.getName() + ", Keep alive packet is sent, selectionKey size: {}", thread.getSelectionKeySize());
+                        thread.interestWriteOpsAll();
+                        logger.info(thread.getName() + ", Keep alive packet is sent, selectionKey size: {}",
+                                thread.getSelectionKeySize());
                     });
                     Thread.sleep(Constants.KEEP_ALIVE_SLEEP_TIME);
                 } catch (RuntimeException e) {
@@ -108,10 +110,13 @@ public class ThreadedSelector {
                     failedTime = 0;
                     logger.info(builder);
                 }
+
                 for (BossThread bossThread : bossThreads) {
                     // 输出bossThread统计
                     logger.info(bossThread.getStatistics());
-                    // 同时检查Host健康度
+                }
+                for (BossThread bossThread : bossThreads) {
+                    // 检查Host健康度
                     bossThread.checkHost();
                 }
                 try {
@@ -132,7 +137,7 @@ public class ThreadedSelector {
     public void stop() {
         // 中断所有选择器
         bossThreads.forEach(Thread::interrupt);
-        selectorThreads.forEach(SelectorThread::interestOpsInAll);
+        selectorThreads.forEach(SelectorThread::interestWriteOpsAll);
     }
 
     /**
@@ -248,6 +253,8 @@ public class ThreadedSelector {
         private long costAvg;
         private long tryConnect = 0;
         private long failedConnect = 0;
+        private long tryConnectLast = 0;
+        private long failedConnectLast = 0;
 
         // 是否停用
         private volatile boolean stopped = false;
@@ -274,7 +281,7 @@ public class ThreadedSelector {
                     if (stopped) {
                         // 如果该Host被禁用，则等待2小时
                         long sleepTime = 2 * 60 * 60 * 1000;
-                        logger.error("Host {} will sleep {} seconds!", host, sleepTime / 1000d);
+                        logger.error("Host {} will sleep {} seconds!", host, sleepTime / 1000);
                         Thread.sleep(sleepTime);
                         stopped = false;
                     }
@@ -286,11 +293,14 @@ public class ThreadedSelector {
                         continue;
                     }
                     if (!addChannel(task.getRoomId(), socketAddress)) {
+                        task.addFailedTimes();
                         if (task.getFailedTimes() < MAX_FAILED_TIMES) {
                             args.taskQueue.add(task);
                         }
                         logger.error("Add channel FAILED: {}/{}/{}", socketAddress, task.getRoomId(), task.getFailedTimes());
-                        task.addFailedTimes();
+                        // 休息20秒
+                        Thread.sleep(20 * 1000);
+                        releasePermit(socketAddress);
                     }
                 } catch (InterruptedException e) {
                     break;
@@ -426,21 +436,25 @@ public class ThreadedSelector {
          * 输出统计信息
          */
         public String getStatistics() {
-            return "Statistics [" + host + "], tryConnect/" + tryConnect + ", failedConnect/" + failedConnect +
+            return "Host [" + host + "], tryConnect/" + tryConnect + ", failedConnect/" + failedConnect +
                     ", max/" + costMax + ", min/" + costMin + ", avg/" + costAvg +
                     ", used/" + (Constants.CONNECTION_LIMIT_PER_HOST * ports.length - socketPermit.size() - 1) +
-                    ", left/" + (socketPermit.size() + 1);
+                    ", left/" + (socketPermit.size() + 1) +
+                    ", stopped/" + stopped;
         }
 
         /**
          * 判断是否应该停用该Host
-         * 如果失败率大于50%，则将该IP停用2小时
+         * 如果失败率大于30%，则将该IP停用数小时
          */
         public void checkHost() {
-            if (failedConnect > 0 && tryConnect > 0 && (double) failedConnect / tryConnect >= 0.5) {
-                logger.error("Host {} is not healthy!", host);
+            long total = tryConnect - tryConnectLast;
+            long failed = failedConnect - failedConnectLast;
+            if (total > 0 && failed > 0 && (double) failed / total >= 0.3) {
                 stopped = true;
             }
+            tryConnectLast = tryConnect;
+            failedConnectLast = failedConnect;
         }
     }
 
@@ -462,7 +476,7 @@ public class ThreadedSelector {
          * 客户端初始化
          */
         SelectorThread() {
-            setName(getClass().getSimpleName() + index++);
+            setName(getClass().getSimpleName() + "-" + index++);
             try {
                 selector = Selector.open();
             } catch (IOException e) {
@@ -681,7 +695,7 @@ public class ThreadedSelector {
         /**
          * 通知轮训器注册写操作
          */
-        void interestOpsInAll() {
+        void interestWriteOpsAll() {
             if (selector.isOpen()) {
                 selector.keys().forEach(key -> interestOps(key, SelectionKey.OP_WRITE));
             }

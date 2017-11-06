@@ -2,7 +2,7 @@ package in.odachi.douyucollector;
 
 import in.odachi.douyucollector.common.constant.RedisKeys;
 import in.odachi.douyucollector.common.util.ConfigUtil;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.redisson.Redisson;
 import org.redisson.api.*;
 import org.redisson.config.Config;
