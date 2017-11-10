@@ -167,7 +167,7 @@ class EventHandler {
             while (writeBuf.hasRemaining()) {
                 if (channel.write(writeBuf) <= 0) {
                     // 发送失败关闭链接
-                    logger.error("Send keep alive request FAILED, channel is closing: {}", toString());
+                    logger.error("Send keep alive request error, channel is closing: {}", toString());
                     return false;
                 }
             }
@@ -175,7 +175,7 @@ class EventHandler {
             logger.error("Got an IOException during write: ", e);
             return false;
         }
-        logger.trace("Send keep alive request SUCCESS: {}", toString());
+        logger.trace("Send keep alive request success: {}", toString());
         return true;
     }
 

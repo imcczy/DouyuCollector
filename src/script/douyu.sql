@@ -68,3 +68,18 @@ CREATE TABLE `room` (
   `update_time` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`room_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Table structure for log
+-- ----------------------------
+DROP TABLE IF EXISTS `log`;
+CREATE TABLE `log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `time` datetime DEFAULT NULL,
+  `module` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `level` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `rid` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `message` varchar(2048) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `index_rid` (`rid`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

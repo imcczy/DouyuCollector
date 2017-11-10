@@ -20,7 +20,7 @@ public class QueueScheduler implements Scheduler {
             return;
         }
         if (!queue.offer(request)) {
-            logger.error("Offer request into queue FAILED: {}", request);
+            logger.error("Offer request into queue error: {}", request);
         }
     }
 

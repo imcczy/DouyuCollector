@@ -3,6 +3,7 @@ package in.odachi.douyucollector.database;
 import in.odachi.douyucollector.common.util.ConfigUtil;
 import in.odachi.douyucollector.database.entity.Category;
 import in.odachi.douyucollector.database.entity.Gift;
+import in.odachi.douyucollector.database.entity.Log;
 import in.odachi.douyucollector.database.entity.Room;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.BasicRowProcessor;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public enum DBUtility {
     // 单例模式
@@ -111,6 +113,39 @@ public enum DBUtility {
                     LocalDateTime.now()
             );
             logger.trace("Database insert: " + c);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+    }
+
+    public void log(List<Log> logList) {
+        final int ENTITY_SIZE = 4;
+        Object[][] params = new Object[logList.size()][ENTITY_SIZE];
+        for (int i = 0; i < logList.size(); i++) {
+            Log log = logList.get(i);
+            params[i][0] = LocalDateTime.now();
+            params[i][1] = log.getModule();
+            params[i][2] = log.getLevel();
+            params[i][3] = log.getRid();
+            params[i][4] = log.getMessage();
+        }
+        try {
+            QueryRunner run = new QueryRunner(dataSource);
+            run.batch(DBStatement.INSERT_LOG, params);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+    }
+
+    public void log(Log log) {
+        try {
+            QueryRunner run = new QueryRunner(dataSource);
+            run.update(DBStatement.INSERT_LOG,
+                    LocalDateTime.now(),
+                    log.getModule(),
+                    log.getLevel(),
+                    log.getRid(),
+                    log.getMessage());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }

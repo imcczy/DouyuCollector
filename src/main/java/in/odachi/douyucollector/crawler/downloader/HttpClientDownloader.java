@@ -2,6 +2,8 @@ package in.odachi.douyucollector.crawler.downloader;
 
 import in.odachi.douyucollector.crawler.Request;
 import in.odachi.douyucollector.crawler.Response;
+import in.odachi.douyucollector.database.Log2DB;
+import in.odachi.douyucollector.database.entity.Log;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -28,6 +30,8 @@ public class HttpClientDownloader implements Downloader {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final Log2DB log2DB = Log2DB.getLog();
+
     private HttpClientGenerator httpClientGenerator = new HttpClientGenerator();
 
     @Override
@@ -38,9 +42,17 @@ public class HttpClientDownloader implements Downloader {
         try {
             httpResponse = httpClient.execute(generateHttpUriRequest(request), generateHttpClientContext(request));
             response = handleResponse(request, httpResponse);
-            logger.debug("Downloading page success {}", request);
+            logger.debug("Download page success {}", request);
+            if (request.getMark() != null) {
+                log2DB.log(new Log().crawler().debug().rid(request.getMark())
+                        .message("Download page success."));
+            }
         } catch (IOException e) {
             logger.warn("Download page {} error", request, e);
+            if (request.getMark() != null) {
+                log2DB.log(new Log().crawler().error().rid(request.getMark())
+                        .message("Download page error."));
+            }
             response.setDownloadSuccess(false);
         } finally {
             if (httpResponse != null) {

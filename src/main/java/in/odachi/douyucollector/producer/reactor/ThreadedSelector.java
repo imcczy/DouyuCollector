@@ -2,6 +2,8 @@ package in.odachi.douyucollector.producer.reactor;
 
 import in.odachi.douyucollector.ChannelTask;
 import in.odachi.douyucollector.common.constant.Constants;
+import in.odachi.douyucollector.database.Log2DB;
+import in.odachi.douyucollector.database.entity.Log;
 import in.odachi.douyucollector.producer.util.PacketUtil;
 import in.odachi.douyucollector.protocol.Message;
 import org.slf4j.Logger;
@@ -23,6 +25,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ThreadedSelector {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final Log2DB log2DB = Log2DB.getLog();
 
     // 自增编号
     private static long index = 0;
@@ -292,16 +296,22 @@ public class ThreadedSelector {
                         releasePermit(socketAddress);
                         continue;
                     }
+
+                    log2DB.log(new Log().producer().debug().rid(task.getRoomId().toString()).message("Ready to add channel."));
                     if (!addChannel(task.getRoomId(), socketAddress)) {
                         task.addFailedTimes();
                         if (task.getFailedTimes() < MAX_FAILED_TIMES) {
                             args.taskQueue.add(task);
                         }
-                        logger.error("Add channel FAILED: {}/{}/{}", socketAddress, task.getRoomId(), task.getFailedTimes());
+                        logger.error("Add channel error: {}/{}/{}", socketAddress, task.getRoomId(), task.getFailedTimes());
+                        log2DB.log(new Log().producer().error().rid(task.getRoomId().toString())
+                                .message("Add channel error, " + socketAddress));
                         // 休息20秒
                         Thread.sleep(20 * 1000);
                         releasePermit(socketAddress);
                     }
+                    log2DB.log(new Log().producer().info().rid(task.getRoomId().toString())
+                            .message("Add channel success, " + socketAddress));
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -320,7 +330,7 @@ public class ThreadedSelector {
                 channel.connect(socketAddress);
                 // try login
                 if (!login(roomId, eventHandler, channel)) {
-                    throw new IOException(String.format("Channel login FAILED, %s/%s", socketAddress, roomId));
+                    throw new IOException(String.format("Channel login error, %s/%s", socketAddress, roomId));
                 }
                 // 设为非阻塞模式
                 channel.configureBlocking(false);
@@ -382,10 +392,12 @@ public class ThreadedSelector {
             }
             if (loginRet == null || !loginRet.contains("type@=loginres/")) {
                 // login failed
-                logger.error("Login FAILED, channel is closing: {}", eventHandler);
+                logger.error("Login error, channel is closing: {}", eventHandler);
                 return false;
             }
-            logger.debug("Login SUCCESS packet received: {}", eventHandler);
+            logger.debug("Login success packet received: {}", eventHandler);
+            log2DB.log(new Log().producer().info().rid(roomId.toString())
+                    .message("Login success packet received."));
             // join group
             outputStream.write(PacketUtil.generateJoinGroupPacket(roomId, Constants.GROUP_ID));
             outputStream.flush();
@@ -400,7 +412,9 @@ public class ThreadedSelector {
                 roomListenedSet.remove(eventHandler.getRoomId());
             }
             releasePermit(eventHandler.getSocketAddress());
-            logger.debug("SelectionKey canceled: {}", eventHandler);
+            logger.debug("SelectionKey canceled, channel closed: {}", eventHandler);
+            log2DB.log(new Log().producer().info().rid(eventHandler.getRoomId().toString())
+                    .message("Selection key canceled, channel closed: " + eventHandler.getSocketAddress()));
         }
 
         /**
@@ -651,7 +665,7 @@ public class ThreadedSelector {
             try {
                 oldSelector.close();
             } catch (Exception t) {
-                logger.error("FAILED to close the old selector, {}", t);
+                logger.error("Failed to close the old selector, {}", t);
             }
 
             logger.error("Migrated " + nChannels + " channel(s) to the new Selector.");

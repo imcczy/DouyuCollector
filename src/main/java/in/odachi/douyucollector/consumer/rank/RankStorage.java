@@ -65,8 +65,8 @@ public enum RankStorage {
         mcm.keySet().forEach(roomId -> map.put(roomId, mcm.replace(roomId, 0d)));
         mcm5.putIntoSlots(map);
         mch1.putIntoSlots(map);
-        top(gpm5, "chat", "count", "min5");
-        top(gph1, "chat", "count", "hour1");
+        top(mcm5, "chat", "count", "min5");
+        top(mch1, "chat", "count", "hour1");
         topAndDaily(map, "chat", "count");
     }
 
@@ -78,8 +78,8 @@ public enum RankStorage {
         mum.keySet().forEach(roomId -> map.put(roomId, (double) mum.replace(roomId, new HashSet<>()).size()));
         mum5.putIntoSlots(map);
         muh1.putIntoSlots(map);
-        top(gpm5, "chat", "user", "min5");
-        top(gph1, "chat", "user", "hour1");
+        top(mum5, "chat", "user", "min5");
+        top(muh1, "chat", "user", "hour1");
         topAndDaily(map, "chat", "user");
     }
 
@@ -91,9 +91,9 @@ public enum RankStorage {
         gcm.keySet().forEach(roomId -> map.put(roomId, gcm.replace(roomId, 0d)));
         gcm5.putIntoSlots(map);
         gch1.putIntoSlots(map);
-        top(gpm5, "gift", "count", "min5");
-        top(gph1, "gift", "count", "hour1");
-        topAndDaily(map, "gift", "count");
+        top(gcm5, "dgb", "count", "min5");
+        top(gch1, "dgb", "count", "hour1");
+        topAndDaily(map, "dgb", "count");
     }
 
     /**
@@ -104,9 +104,9 @@ public enum RankStorage {
         gum.keySet().forEach(roomId -> map.put(roomId, (double) gum.replace(roomId, new HashSet<>()).size()));
         gum5.putIntoSlots(map);
         guh1.putIntoSlots(map);
-        top(gpm5, "gift", "user", "min5");
-        top(gph1, "gift", "user", "hour1");
-        topAndDaily(map, "gift", "user");
+        top(gum5, "dgb", "user", "min5");
+        top(guh1, "dgb", "user", "hour1");
+        topAndDaily(map, "dgb", "user");
     }
 
     /**
@@ -134,9 +134,9 @@ public enum RankStorage {
         });
         gpm5.putIntoSlots(map);
         gph1.putIntoSlots(map);
-        top(gpm5, "gift", "price", "min5");
-        top(gph1, "gift", "price", "hour1");
-        topAndDaily(map, "gift", "price");
+        top(gpm5, "dgb", "price", "min5");
+        top(gph1, "dgb", "price", "hour1");
+        topAndDaily(map, "dgb", "price");
     }
 
     /**

@@ -4,12 +4,15 @@ import in.odachi.douyucollector.common.constant.Constants;
 import in.odachi.douyucollector.common.util.NumberUtil;
 import in.odachi.douyucollector.crawler.Request;
 import in.odachi.douyucollector.crawler.Response;
+import in.odachi.douyucollector.database.Log2DB;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class RoomListProcessor implements Processor {
+
+    private final Log2DB log2DB = Log2DB.getLog();
 
     /**
      * 用于解析房间详情页面
@@ -37,6 +40,7 @@ public class RoomListProcessor implements Processor {
         ((List<Map<String, Object>>) data.get("result")).forEach((result) -> {
             Integer roomId = NumberUtil.parseInt(result.get("room_id"));
             Request r3 = new Request(processor)
+                    .mark(roomId.toString())
                     .url(Constants.HTTP_OPEN_DOUYUCDN_CN_API_ROOM_API_ROOM + roomId);
             response.addTargetRequest(r3);
         });

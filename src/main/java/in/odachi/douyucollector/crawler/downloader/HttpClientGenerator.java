@@ -39,7 +39,7 @@ public class HttpClientGenerator {
         try {
             return new SSLConnectionSocketFactory(createIgnoreVerifySSL()); // 优先绕过安全证书
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
-            logger.error("SSL connection FAILED, {}", e);
+            logger.error("SSL connection error, {}", e);
         }
         return SSLConnectionSocketFactory.getSocketFactory();
     }

@@ -5,6 +5,8 @@ import in.odachi.douyucollector.RedissonStorage;
 import in.odachi.douyucollector.common.constant.Constants;
 import in.odachi.douyucollector.common.util.ConfigUtil;
 import in.odachi.douyucollector.crawler.Item;
+import in.odachi.douyucollector.database.Log2DB;
+import in.odachi.douyucollector.database.entity.Log;
 import in.odachi.douyucollector.database.entity.Room;
 import org.redisson.api.RBucket;
 import org.slf4j.Logger;
@@ -19,10 +21,12 @@ public class ProducerPipeline implements Pipeline {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final Log2DB log2DB = Log2DB.getLog();
+
     private final BlockingQueue<ChannelTask> channelTasks;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Constants.DATE_PATTERN);
 
-    private long listenedCount;
+    private long totalCount;
 
     public ProducerPipeline(BlockingQueue<ChannelTask> channelTasks) {
         this.channelTasks = channelTasks;
@@ -35,10 +39,10 @@ public class ProducerPipeline implements Pipeline {
                 Room r = (Room) i;
                 Integer roomId = r.getRoomId();
                 // 推送任务到生产者
+                totalCount++;
                 if (r.getFansNum() > ConfigUtil.getFansMinimum()) {
-                    listenedCount++;
                     if (!channelTasks.offer(new ChannelTask(roomId))) {
-                        logger.error("Offer room id into channel task queue FAILED: {}", roomId);
+                        logger.error("Offer room into channel task queue error: {}", roomId);
                     }
                 }
                 // 统计人气峰值
@@ -55,7 +59,9 @@ public class ProducerPipeline implements Pipeline {
                     Double value = oldValue == null ? 0.2 : oldValue + 0.2;
                     onlineTotal.set(value, Constants.REDIS_DATA_KEEP_DAYS, TimeUnit.DAYS);
                 } else {
-                    logger.debug("Listened room is not online: " + roomId);
+                    logger.debug("The room is not online: " + roomId);
+                    log2DB.log(new Log().crawler().debug().rid(r.getRoomId().toString())
+                            .message("The room is not online."));
                 }
             }
         });
@@ -64,6 +70,6 @@ public class ProducerPipeline implements Pipeline {
 
     @Override
     public void close() {
-        logger.info("Listened room totally: {}", listenedCount);
+        logger.info("Total room count: {}", totalCount);
     }
 }

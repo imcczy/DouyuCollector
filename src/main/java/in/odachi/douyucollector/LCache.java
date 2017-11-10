@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import in.odachi.douyucollector.database.DBUtility;
 import in.odachi.douyucollector.database.entity.Gift;
+import in.odachi.douyucollector.database.entity.Log;
 import in.odachi.douyucollector.database.entity.Room;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,17 +21,19 @@ public enum LCache {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Map<Integer, Gift> gc = new ConcurrentHashMap<>();
+    private final DBUtility dbUtility = DBUtility.instance;
 
     /**
      * 未找到的礼物
      */
-    private Set<Integer> giftNotFound = new HashSet<>();
+    private final Set<Integer> giftNotFound = new HashSet<>();
+
+    private Map<Integer, Gift> gc = new ConcurrentHashMap<>();
 
     private Cache<Integer, Boolean> rc = CacheBuilder.newBuilder().expireAfterWrite(6, TimeUnit.HOURS).build();
 
     public Gift getGift(Integer id) {
-        return gc.computeIfAbsent(id, DBUtility.instance::queryGift);
+        return gc.computeIfAbsent(id, dbUtility::queryGift);
     }
 
     /**
@@ -38,7 +41,7 @@ public enum LCache {
      */
     public void putGift(Gift g) {
         if (!gc.containsKey(g.getId())) {
-            DBUtility.instance.insertGift(g);
+            dbUtility.insertGift(g);
             gc.put(g.getId(), g);
             synchronized (giftNotFound) {
                 if (giftNotFound.remove(g.getId())) {
@@ -54,7 +57,7 @@ public enum LCache {
      */
     public void putRoom(Room r) {
         if (rc.getIfPresent(r.getRoomId()) == null) {
-            DBUtility.instance.insertRoom(r);
+            dbUtility.insertRoom(r);
             rc.put(r.getRoomId(), Boolean.TRUE);
         }
     }

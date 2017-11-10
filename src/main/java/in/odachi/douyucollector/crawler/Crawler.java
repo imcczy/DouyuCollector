@@ -106,7 +106,7 @@ public class Crawler implements Runnable {
                             if (!response.getItem().isSkip()) {
                                 pipelines.forEach(pipeline -> {
                                     if (!pipeline.process(response.getItem())) {
-                                        logger.error("Process entity {} FAILED.", response.getItem());
+                                        logger.error("Process entity {} error.", response.getItem());
                                     }
                                 });
                             }

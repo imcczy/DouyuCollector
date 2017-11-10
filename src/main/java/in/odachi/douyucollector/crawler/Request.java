@@ -35,6 +35,8 @@ public class Request {
 
     private Map<String, String> headers = new HashMap<>();
 
+    private String mark;
+    
     public Request(Processor processor) {
         this.processor = processor;
     }
@@ -132,6 +134,15 @@ public class Request {
 
     public Processor getProcessor() {
         return processor;
+    }
+
+    public String getMark() {
+        return mark;
+    }
+
+    public Request mark(String mark) {
+        this.mark = mark;
+        return this;
     }
 
     @Override

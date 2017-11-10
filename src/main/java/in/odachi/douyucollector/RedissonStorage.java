@@ -2,7 +2,6 @@ package in.odachi.douyucollector;
 
 import in.odachi.douyucollector.common.constant.RedisKeys;
 import in.odachi.douyucollector.common.util.ConfigUtil;
-import org.apache.commons.lang3.tuple.Pair;
 import org.redisson.Redisson;
 import org.redisson.api.*;
 import org.redisson.config.Config;
@@ -23,7 +22,7 @@ public enum RedissonStorage {
         client = Redisson.create(config);
     }
 
-    public RList<Pair<Long, Integer>> messageProcessedRateMap() {
+    public RList<Number[]> messageProcessedRateList() {
         return client.getList(RedisKeys.SYSTEM_MESSAGE_PROCESSED_RATE);
     }
 

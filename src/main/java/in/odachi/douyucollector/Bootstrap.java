@@ -136,7 +136,7 @@ public class Bootstrap {
     private static class BootProducer {
 
         private static final String[] hosts = new String[]{
-                "123.150.206.162",  // openbarrage.douyutv.com
+                // "123.150.206.162",  // openbarrage.douyutv.com
                 "124.95.174.146",   // openbarrage.douyutv.com
                 "180.97.182.50",    // danmu.douyutv.com (aliyun)
                 "115.231.96.22",    // danmu.douyu.com (aliyun)
