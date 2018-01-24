@@ -5,6 +5,7 @@ import in.odachi.douyucollector.database.entity.Category;
 import in.odachi.douyucollector.database.entity.Gift;
 import in.odachi.douyucollector.database.entity.Log;
 import in.odachi.douyucollector.database.entity.Room;
+import in.odachi.douyucollector.protocol.Chat;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.BasicRowProcessor;
 import org.apache.commons.dbutils.GenerousBeanProcessor;
@@ -147,6 +148,21 @@ public enum DBUtility {
                     log.getRid(),
                     log.getMessage());
         } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+    }
+    public void danmu(Chat chat){
+        try {
+            QueryRunner run = new QueryRunner(dataSource);
+            run.update(DBStatement.INSERT_DANMU,
+                    chat.getRid(),
+                    chat.getUid(),
+                    LocalDateTime.now(),
+                    chat.getNn(),
+                    chat.getLevel(),
+                    chat.getTxt()
+                    );
+        }catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }
     }

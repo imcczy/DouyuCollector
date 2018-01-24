@@ -41,6 +41,12 @@ public class Request {
         this.processor = processor;
     }
 
+    public Request(Processor processor,Integer roomId){
+        this.processor = processor;
+        this.url = Constants.HTTP_OPEN_DOUYUCDN_CN_API_ROOM_API_ROOM+ roomId;
+        this.mark = String.valueOf(roomId);
+    }
+
     public Request url(String url) {
         this.url = url;
         return this;

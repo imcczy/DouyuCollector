@@ -3,6 +3,7 @@ package in.odachi.douyucollector.consumer;
 import in.odachi.douyucollector.RedissonStorage;
 import in.odachi.douyucollector.common.constant.Constants;
 import in.odachi.douyucollector.consumer.util.MessageUtil;
+import in.odachi.douyucollector.database.Log2DB;
 import in.odachi.douyucollector.protocol.Chat;
 import in.odachi.douyucollector.protocol.Deserve;
 import in.odachi.douyucollector.protocol.Dgb;
@@ -24,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Consumer extends Thread {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log2DB log2DB = Log2DB.getLog();
 
     private final BlockingQueue<Message> queue;
     private final List<MessageProcessor> messageProcessors = new LinkedList<>();
@@ -51,7 +53,11 @@ public class Consumer extends Thread {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 final Message m = MessageUtil.parseMessage(queue.take());
-                logger.trace(m.toString());
+                //logger.trace(m.toString());
+                if (m instanceof Chat){
+                    log2DB.danmu((Chat)m);
+                    //System.out.println(m.toString());
+                }
                 messageProcessors.forEach((processor -> processor.process(m)));
             } catch (InterruptedException e) {
                 break;

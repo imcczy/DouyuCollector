@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +28,7 @@ public class ProducerPipeline implements Pipeline {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Constants.DATE_PATTERN);
 
     private long totalCount;
+    //private final Set<Integer> rooms = ConfigUtil.getRoomSet();
 
     public ProducerPipeline(BlockingQueue<ChannelTask> channelTasks) {
         this.channelTasks = channelTasks;
@@ -40,11 +42,11 @@ public class ProducerPipeline implements Pipeline {
                 Integer roomId = r.getRoomId();
                 // 推送任务到生产者
                 totalCount++;
-                if (r.getFansNum() > ConfigUtil.getFansMinimum()) {
+                //if (r.getFansNum() > ConfigUtil.getFansMinimum()) {
                     if (!channelTasks.offer(new ChannelTask(roomId))) {
                         logger.error("Offer room into channel task queue error: {}", roomId);
                     }
-                }
+                //}
                 // 统计人气峰值
                 String today = LocalDateTime.now().format(dateFormatter);
                 RBucket<Integer> onlinePeak = RedissonStorage.instance.onlinePeak(roomId, today);

@@ -31,4 +31,9 @@ abstract class DBStatement {
      * 日志插入
      */
     static final String INSERT_LOG = "insert into log (`time`,`module`,`level`,`rid`,`message`) values(?,?,?,?,?)";
+    /**
+     * 弹幕插入
+     */
+    static final String INSERT_DANMU = "insert into danmu (`room_id`,`user_id`,`time`,`user_name`,`level`,`text`) values(?,?,?,?,?,?)";
+
 }

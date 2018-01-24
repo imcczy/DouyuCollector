@@ -6,6 +6,12 @@ import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 通过文件读取配置项
@@ -49,5 +55,10 @@ public class ConfigUtil {
 
     public static int getRedisDb() {
         return configuration().getInt("douyu.redis.database");
+    }
+    public static Set<Integer> getRoomSet(){
+        return new HashSet<Integer>(Arrays.stream(configuration().
+                getString("douyu.attention.rooms").
+                split(",")).map(Integer::valueOf).collect(Collectors.toSet()));
     }
 }

@@ -1,6 +1,7 @@
 package in.odachi.douyucollector.database;
 
 import in.odachi.douyucollector.database.entity.Log;
+import in.odachi.douyucollector.protocol.Chat;
 
 public class Log2DB {
 
@@ -22,4 +23,5 @@ public class Log2DB {
     public void log(Log log) {
         dbUtility.log(log);
     }
+    public void danmu(Chat c){dbUtility.danmu(c);}
 }

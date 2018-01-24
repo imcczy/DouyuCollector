@@ -17,7 +17,7 @@ public enum RedissonStorage {
         Config config = new Config();
         config.useSingleServer()
                 .setAddress(ConfigUtil.getRedisAddress())
-                .setPassword(ConfigUtil.getRedisPassword())
+                //.setPassword(ConfigUtil.getRedisPassword())
                 .setDatabase(ConfigUtil.getRedisDb());
         client = Redisson.create(config);
     }

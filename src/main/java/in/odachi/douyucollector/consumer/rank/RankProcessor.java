@@ -1,6 +1,7 @@
 package in.odachi.douyucollector.consumer.rank;
 
 import in.odachi.douyucollector.consumer.MessageProcessor;
+import in.odachi.douyucollector.database.Log2DB;
 import in.odachi.douyucollector.protocol.Chat;
 import in.odachi.douyucollector.protocol.Deserve;
 import in.odachi.douyucollector.protocol.Dgb;

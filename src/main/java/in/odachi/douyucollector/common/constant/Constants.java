@@ -3,6 +3,10 @@ package in.odachi.douyucollector.common.constant;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 常量类
  */

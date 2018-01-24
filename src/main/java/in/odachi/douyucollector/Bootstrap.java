@@ -1,6 +1,7 @@
 package in.odachi.douyucollector;
 
 import in.odachi.douyucollector.common.constant.Constants;
+import in.odachi.douyucollector.common.util.ConfigUtil;
 import in.odachi.douyucollector.consumer.Consumer;
 import in.odachi.douyucollector.consumer.rank.RankProcessor;
 import in.odachi.douyucollector.crawler.Crawler;
@@ -8,7 +9,9 @@ import in.odachi.douyucollector.crawler.Request;
 import in.odachi.douyucollector.crawler.pipeline.DatabasePipeline;
 import in.odachi.douyucollector.crawler.pipeline.ProducerPipeline;
 import in.odachi.douyucollector.crawler.processor.CategoryProcessor;
+import in.odachi.douyucollector.crawler.processor.Processor;
 import in.odachi.douyucollector.crawler.processor.RoomListProcessor;
+import in.odachi.douyucollector.crawler.processor.RoomPageProcessor;
 import in.odachi.douyucollector.producer.reactor.ThreadedSelector;
 import in.odachi.douyucollector.protocol.Message;
 import org.slf4j.Logger;
@@ -54,7 +57,8 @@ public class Bootstrap {
 
         private void scheduleCrawler() {
             //executor.scheduleAtFixedRate(this::categoryCrawler, 0, 1, TimeUnit.DAYS);
-            executor.scheduleAtFixedRate(this::roomCrawler, 0, 12, TimeUnit.MINUTES);
+            //executor.scheduleAtFixedRate(this::roomCrawler, 0, 12, TimeUnit.MINUTES);
+            executor.scheduleAtFixedRate(this::attentionCrawler,0,12,TimeUnit.MINUTES);
             shutdownGracefully();
         }
 
@@ -84,6 +88,15 @@ public class Bootstrap {
                     .pipeline(new DatabasePipeline())
                     .threadNum(1)
                     .run();
+        }
+
+        private void attentionCrawler() {
+            Processor processor = new RoomPageProcessor();
+            Crawler crawler = new Crawler().pipeline(new ProducerPipeline(channelTasks));
+            ConfigUtil.getRoomSet().forEach(roomId -> {
+                crawler.startRequest(new Request(processor,roomId));
+            });
+            crawler.threadNum(1).run();
         }
 
         private void shutdownGracefully() {
