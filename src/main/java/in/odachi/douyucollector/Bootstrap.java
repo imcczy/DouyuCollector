@@ -53,7 +53,7 @@ public class Bootstrap {
         }
 
         private void scheduleCrawler() {
-            executor.scheduleAtFixedRate(this::categoryCrawler, 0, 1, TimeUnit.DAYS);
+            //executor.scheduleAtFixedRate(this::categoryCrawler, 0, 1, TimeUnit.DAYS);
             executor.scheduleAtFixedRate(this::roomCrawler, 0, 12, TimeUnit.MINUTES);
             shutdownGracefully();
         }
