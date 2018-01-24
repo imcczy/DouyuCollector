@@ -2,7 +2,9 @@ package in.odachi.douyucollector.protocol;
 
 import in.odachi.douyucollector.common.util.NumberUtil;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * 弹幕消息
@@ -163,5 +165,15 @@ public class Chat extends Message {
 
     public Integer getBdlv() {
         return bdlv;
+    }
+
+    @Override
+    public String toString() {
+        return this.rid + "," +
+                this.uid + "," +
+                LocalDateTime.now() + "," +
+                this.nn + "," +
+                this.level + "," +
+                this.txt;
     }
 }
