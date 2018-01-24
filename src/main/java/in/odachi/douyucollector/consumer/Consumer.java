@@ -55,8 +55,8 @@ public class Consumer extends Thread {
                 final Message m = MessageUtil.parseMessage(queue.take());
                 //logger.trace(m.toString());
                 if (m instanceof Chat){
-                    log2DB.danmu((Chat)m);
-                    //logger.info(((Chat) m).toString());
+                    //log2DB.danmu((Chat)m);
+                    logger.trace(((Chat) m).toString());
                     //System.out.println(((Chat) m).toString());
                 }
                 messageProcessors.forEach((processor -> processor.process(m)));

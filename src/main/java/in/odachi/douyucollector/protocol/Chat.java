@@ -169,11 +169,10 @@ public class Chat extends Message {
 
     @Override
     public String toString() {
-        return this.rid + "," +
-                this.uid + "," +
-                LocalDateTime.now() + "," +
-                this.nn + "," +
-                this.level + "," +
+        return this.rid + "@=" +
+                this.uid + "@=" +
+                this.nn + "@=" +
+                this.level + "@=" +
                 this.txt;
     }
 }
