@@ -13,7 +13,7 @@ logs/
 conf/
 .DS_Store
 *.DS_Store
-redis/
+redis/douyu.rdb
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
