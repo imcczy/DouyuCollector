@@ -86,6 +86,16 @@ public class Chat extends Message {
      */
     private Integer bdlv;
 
+    /**
+     * 粉丝牌子
+     */
+    private Integer brid;
+
+    /**
+     * 牌子等级
+     */
+    private Integer bl;
+
     public Chat(Message message, Map<String, String> obj) {
         super(message);
         this.type = obj.get("type");
@@ -105,6 +115,8 @@ public class Chat extends Message {
         this.dlv = NumberUtil.parseInt(obj.get("dlv"));
         this.dc = NumberUtil.parseInt(obj.get("dc"));
         this.bdlv = NumberUtil.parseInt(obj.get("bdlv"));
+        this.bl = NumberUtil.parseInt(obj.get("bl"));
+        this.brid = NumberUtil.parseInt(obj.get("brid"));
     }
 
     public String getGid() {
@@ -167,12 +179,22 @@ public class Chat extends Message {
         return bdlv;
     }
 
+    public Integer getBrid() {
+        return brid;
+    }
+
+    public Integer getBl() {
+        return bl;
+    }
+
     @Override
     public String toString() {
         return this.rid + "@=" +
                 this.uid + "@=" +
-                this.nn + "@=" +
                 this.level + "@=" +
+                this.nn + "@=" +
+                this.bl + "@=" +
+                this.brid + "@=" +
                 this.txt;
     }
 }

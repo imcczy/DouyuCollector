@@ -67,7 +67,7 @@ public enum DBUtility {
                     g.getHimg(),
                     LocalDateTime.now()
             );
-            logger.trace("Database insert: " + g);
+            logger.debug("Database insert: " + g);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -91,7 +91,7 @@ public enum DBUtility {
                     r.getRoomThumb(),
                     LocalDateTime.now()
             );
-            logger.trace("Database insert: " + r);
+            logger.debug("Database insert: " + r);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -113,7 +113,7 @@ public enum DBUtility {
                     c.getCount(),
                     LocalDateTime.now()
             );
-            logger.trace("Database insert: " + c);
+            logger.debug("Database insert: " + c);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }

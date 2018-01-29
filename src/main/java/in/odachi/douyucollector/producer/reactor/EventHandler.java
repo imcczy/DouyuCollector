@@ -175,7 +175,7 @@ class EventHandler {
             logger.error("Got an IOException during write: ", e);
             return false;
         }
-        logger.trace("Send keep alive request success: {}", toString());
+        logger.debug("Send keep alive request success: {}", toString());
         return true;
     }
 

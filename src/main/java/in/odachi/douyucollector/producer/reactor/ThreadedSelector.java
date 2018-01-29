@@ -1,6 +1,7 @@
 package in.odachi.douyucollector.producer.reactor;
 
 import in.odachi.douyucollector.ChannelTask;
+import in.odachi.douyucollector.ListenedRoom;
 import in.odachi.douyucollector.common.constant.Constants;
 import in.odachi.douyucollector.database.Log2DB;
 import in.odachi.douyucollector.database.entity.Log;
@@ -244,7 +245,8 @@ public class ThreadedSelector {
         // 可用端口：8601,8602,12601,12602,12603,12604
         private final Integer[] ports = new Integer[]{8601, 8602, 12601, 12602, 12603, 12604};
         private final SelectorThreadLoadBalancer threadChooser;
-        private final Set<Integer> roomListenedSet;
+        //private final Set<Integer> roomListenedSet;
+        private ListenedRoom listenedRoom = ListenedRoom.instance;
         private final Logger logger = LoggerFactory.getLogger(getClass());
 
         // 目前斗鱼服务器每个客户端IP限制200（约）个连接
@@ -270,7 +272,7 @@ public class ThreadedSelector {
             setName(getClass().getSimpleName() + "-" + host.replaceAll("\\.", "-"));
             this.host = host;
             this.threadChooser = threadChooser;
-            this.roomListenedSet = new HashSet<>();
+            //this.roomListenedSet = new HashSet<>();
             for (Integer port : ports) {
                 for (int i = 0; i < Constants.CONNECTION_LIMIT_PER_HOST; i++) {
                     socketPermit.add(new InetSocketAddress(host, port));
@@ -291,8 +293,10 @@ public class ThreadedSelector {
                     }
                     InetSocketAddress socketAddress = acquirePermit();
                     ChannelTask task = args.taskQueue.take();
+                    //System.out.println(listenedRoom.toString());
+                    //System.out.println("adding:"+task.getRoomId());
                     if (contains(task.getRoomId())) {
-                        logger.trace("Room {} is under listening!", task.getRoomId());
+                        logger.debug("Room {} is under listening!", task.getRoomId());
                         releasePermit(socketAddress);
                         continue;
                     }
@@ -335,9 +339,10 @@ public class ThreadedSelector {
                 // 设为非阻塞模式
                 channel.configureBlocking(false);
                 registerChannel(eventHandler);
-                synchronized (roomListenedSet) {
-                    roomListenedSet.add(roomId);
-                }
+                //synchronized (roomListenedSet) {
+                    //roomListenedSet.add(roomId);
+                //}
+                listenedRoom.addRoom(roomId);
             } catch (RuntimeException | IOException e) {
                 failedConnect++;
                 // 只有出异常才关闭channel
@@ -351,7 +356,7 @@ public class ThreadedSelector {
                 return false;
             } finally {
                 long cost = System.currentTimeMillis() - start;
-                logger.trace("Channel connect cost: {} ms, {}/{}" + cost, socketAddress, roomId);
+                logger.debug("Channel connect cost: {} ms, {}/{}" + cost, socketAddress, roomId);
                 // 统计最大值，最小值，平均值
                 if (cost > costMax) {
                     costMax = cost;
@@ -408,9 +413,10 @@ public class ThreadedSelector {
          * 删除连接，同时归还闲置域名:端口
          */
         public void cleanupChannel(EventHandler eventHandler) {
-            synchronized (roomListenedSet) {
-                roomListenedSet.remove(eventHandler.getRoomId());
-            }
+            //synchronized (roomListenedSet) {
+            //    roomListenedSet.remove(eventHandler.getRoomId());
+            //}
+            listenedRoom.delRoom(eventHandler.getRoomId());
             releasePermit(eventHandler.getSocketAddress());
             logger.debug("SelectionKey canceled, channel closed: {}", eventHandler);
             log2DB.log(new Log().producer().info().rid(eventHandler.getRoomId().toString())
@@ -421,7 +427,8 @@ public class ThreadedSelector {
          * 检查某房间是否在监听
          */
         public boolean contains(Integer roomId) {
-            return roomListenedSet.contains(roomId);
+            //return roomListenedSet.contains(roomId);
+            return listenedRoom.contians(roomId);
         }
 
         /**

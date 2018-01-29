@@ -61,4 +61,9 @@ public class ConfigUtil {
                 getString("douyu.attention.rooms").
                 split(",")).map(Integer::valueOf).collect(Collectors.toSet()));
     }
+    public static String[] getServerSet(){
+        return configuration().
+                getString("douyu.attention.servers").
+                split(",");
+    }
 }
